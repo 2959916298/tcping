@@ -42,6 +42,8 @@ type Options struct {
 	ColorOutput   bool
 	VerboseMode   bool
 	ShowTimestamp bool
+	NoColor       bool // 关闭彩色输出（覆盖默认开启）
+	NoTimestamp   bool // 关闭时间戳（覆盖默认开启）
 	ShowVersion   bool
 	ShowHelp      bool
 	Port          int // default is set by flags (80). Must be 1..65535.
@@ -594,14 +596,19 @@ func setupFlags(opts *Options) {
 	flag.IntVar(&opts.Port, "p", defaultPort, "")
 	flag.IntVar(&opts.Port, "port", defaultPort, "")
 
-	flag.BoolVar(&opts.ColorOutput, "c", false, "")
-	flag.BoolVar(&opts.ColorOutput, "color", false, "")
+	// 彩色输出：默认开启；-c/--color 保持兼容，-c 仍可显式开启；--no-color 关闭。
+	flag.BoolVar(&opts.ColorOutput, "c", true, "")
+	flag.BoolVar(&opts.ColorOutput, "color", true, "")
+	flag.BoolVar(&opts.NoColor, "no-color", false, "")
 
 	flag.BoolVar(&opts.VerboseMode, "v", false, "")
 	flag.BoolVar(&opts.VerboseMode, "verbose", false, "")
 
-	flag.BoolVar(&opts.ShowTimestamp, "D", false, "")
-	flag.BoolVar(&opts.ShowTimestamp, "timestamp", false, "")
+	// 时间戳：默认开启；-D/--timestamp 与短别名 -d 保持兼容，--no-timestamp 关闭。
+	flag.BoolVar(&opts.ShowTimestamp, "d", true, "")
+	flag.BoolVar(&opts.ShowTimestamp, "D", true, "")
+	flag.BoolVar(&opts.ShowTimestamp, "timestamp", true, "")
+	flag.BoolVar(&opts.NoTimestamp, "no-timestamp", false, "")
 
 	flag.BoolVar(&opts.CSVAuto, "o", false, "")
 	flag.BoolVar(&opts.CSVAuto, "csv", false, "")
@@ -614,6 +621,14 @@ func setupFlags(opts *Options) {
 	flag.BoolVar(&opts.ShowHelp, "help", false, "")
 
 	flag.Parse()
+
+	// 反向开关覆盖默认开启项
+	if opts.NoColor {
+		opts.ColorOutput = false
+	}
+	if opts.NoTimestamp {
+		opts.ShowTimestamp = false
+	}
 
 	opts.Interval = time.Duration(*intervalMS) * time.Millisecond
 	opts.Timeout = time.Duration(*timeoutMS) * time.Millisecond
@@ -759,9 +774,11 @@ func printHelp() {
     -w, --timeout <毫秒>        连接超时 (默认: 1000)
         --dns-timeout <毫秒>    DNS 解析超时 (默认: 1500)
 	    --dns-server <地址>     指定 DNS 服务器 (如: 8.8.8.8 或 8.8.8.8:53)
-    -c, --color                 启用彩色输出
+    -c, --color                 启用彩色输出 (默认已开启)
+        --no-color              关闭彩色输出
     -v, --verbose               启用详细模式
-	-D, --timestamp             显示时间戳 (yyyy-mm-dd hh:mm:ss)
+	-d, -D, --timestamp         显示时间戳 (yyyy-mm-dd hh:mm:ss，默认已开启)
+        --no-timestamp          关闭时间戳
     -o, --csv                   在当前目录生成 CSV 文件记录
         --csv-flush-every <N>   每 N 行 flush 一次 (默认: 50)
         --csv-flush-tick <毫秒> 定时 flush (默认: 1000)

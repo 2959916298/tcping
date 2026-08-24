@@ -25,8 +25,8 @@ readonly NC='\033[0m' # No Color
 # 基本配置
 readonly INSTALL_DIR="/usr/local/bin"
 readonly TCPING_BIN="tcping"
-readonly GITHUB_API="https://api.github.com/repos/nodeseeker/tcping"
-readonly GITHUB_REPO="https://github.com/nodeseeker/tcping"
+readonly GITHUB_API="https://api.github.com/repos/2959916298/tcping"
+readonly GITHUB_REPO="https://github.com/2959916298/tcping"
 readonly TEMP_DIR="/tmp/tcping_install"
 
 # 全局变量
@@ -216,8 +216,8 @@ get_latest_version() {
     fi
     
     if [[ -z "$LATEST_VERSION" ]]; then
-        print_warning "无法获取最新版本信息，使用默认版本 v1.7.1"
-        LATEST_VERSION="v1.7.1"
+        print_warning "无法获取最新版本信息，使用默认版本 v1.9.9"
+        LATEST_VERSION="v1.9.9"
     fi
     
     print_verbose "最新版本: $LATEST_VERSION"

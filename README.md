@@ -2,12 +2,19 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Go Version](https://img.shields.io/badge/Go-1.25+-blue.svg)](https://golang.org/)
-[![Version](https://img.shields.io/badge/Version-v1.7.4-green.svg)](https://github.com/nodeseeker/tcping/releases)
+[![Version](https://img.shields.io/badge/Version-v1.9.9-green.svg)](https://github.com/2959916298/tcping/releases)
 
 一款基于Golang的高性能TCP Ping工具，支持IPv4、IPv6和域名解析，提供丰富的自定义选项和详细的连接信息展示。
 
+> **本仓库与上游 [nodeseeker/tcping](https://github.com/nodeseeker/tcping) 的差异**
+>
+> 本仓库（`2959916298/tcping`）在 upstream 基础上做了以下改动：
+> - **DNS 解析回退**：未指定 `-dns-server` 时优先使用系统默认解析器（尊重 TUN/代理类软件的本地回环 DNS，如 `::1:53`）；仅当默认解析失败时才依次回退公共 DNS `8.8.8.8:53` / `1.1.1.1:53` / `223.5.5.5:53`，以解决 termux/Android 等环境 Go 原生 resolver 命中无监听的 `::1:53` 导致 `connection refused` 的问题。每次回退均打印明确日志。
+> - **默认开启彩色与时间戳**：`-c`/`--color`（彩色）与 `-d`/`-D`/`--timestamp`（时间戳）默认生效；新增短别名 `-d` 等同 `-D`，新增 `--no-color` / `--no-timestamp` 用于关闭。
+> - 当前版本 `v1.9.9`。
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nodeseeker/tcping/refs/heads/main/assets/demo.jpg" alt="releases_example" width="80%" />
+  <img src="https://raw.githubusercontent.com/2959916298/tcping/refs/heads/main/assets/demo.jpg" alt="releases_example" width="80%" />
 </p>
 
 
@@ -47,9 +54,9 @@
 
 #### 📥 下载预编译二进制文件 
 
-访问 [GitHub Releases](https://github.com/nodeseeker/tcping/releases) 页面，选择适合您系统的版本：
+访问 [GitHub Releases](https://github.com/2959916298/tcping/releases) 页面，选择适合您系统的版本：
 
-![releases_example](https://raw.githubusercontent.com/nodeseeker/tcping/refs/heads/main/assets/tcping_releases.jpg)
+![releases_example](https://raw.githubusercontent.com/2959916298/tcping/refs/heads/main/assets/tcping_releases.jpg)
 
 #### 🗂️ 支持的平台和架构
 
@@ -83,7 +90,7 @@ chmod +x /usr/local/bin/tcping
 ```bash
 tcping --version
 
-TCPing 版本 v1.9.0
+TCPing 版本 v1.9.9
 Copyright (c) 2026. All rights reserved.
 ```
 
@@ -95,12 +102,12 @@ Copyright (c) 2026. All rights reserved.
 
 #### 🌍 境外服务器
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/nodeseeker/tcping/main/install.sh) --force
+bash <(curl -Ls https://raw.githubusercontent.com/2959916298/tcping/main/install.sh) --force
 ```
 
 #### 🇨🇳 境内服务器（国内优化版）
 ```bash
-bash <(curl -Ls https://gh-proxy.com/raw.githubusercontent.com/nodeseeker/tcping/main/install_cn.sh) --force
+bash <(curl -Ls https://gh-proxy.com/raw.githubusercontent.com/2959916298/tcping/main/install_cn.sh) --force
 ```
 
 > **注意：** 脚本会自动安装到 `/usr/local/bin` 目录，需要root权限
@@ -505,7 +512,7 @@ TCPing 提供了全面的错误处理机制：
 ### 快速编译
 ```bash
 # 克隆仓库
-git clone https://github.com/nodeseeker/tcping.git
+git clone https://github.com/2959916298/tcping.git
 cd tcping
 
 # 编译当前平台版本
@@ -563,8 +570,8 @@ chmod +x test.sh
 
 感谢所有为项目做出贡献的开发者！
 
-<a href="https://github.com/nodeseeker/tcping/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nodeseeker/tcping" />
+<a href="https://github.com/2959916298/tcping/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=2959916298/tcping" />
 </a>
 
 ---
