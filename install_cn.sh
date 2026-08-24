@@ -30,14 +30,11 @@ readonly GITHUB_API="https://api.github.com/repos/2959916298/tcping"
 readonly GITHUB_REPO="2959916298/tcping"
 readonly TEMP_DIR="/tmp/tcping_install"
 
-# 国内镜像源配置（按优先级排序）
+# 国内镜像源配置（按优先级排序，精简到4个）
 readonly MIRROR_SOURCES=(
-    "https://efp.lxmz.fun/https://github.com"      # 腾讯eo国内版，真的国内ip
-    "https://g1.q66.de5.net/https://github.com"    # cfworker,美国
-    "https://efp.q66.de5.net/https://github.com"   # 腾讯eo国际版，正常是香港ip，国内可能连不上
-    "https://gh-proxy.org/https://github.com"
-    "https://cdn.gh-proxy.org/https://github.com"
-    "https://v4.gh-proxy.org/https://github.com"
+    "https://efp.lxmz.fun/https://github.com"
+    "https://g1.q66.de5.net/https://github.com"
+    "https://efp.q66.de5.net/https://github.com"
     "https://ghfast.top/https://github.com"
 )
 
@@ -268,8 +265,8 @@ try_download() {
     
     print_verbose "尝试从源下载: $download_url"
     
-    # 使用 curl 下载，设置超时和重试
-    if curl -L --connect-timeout 10 --max-time $timeout --retry 2 -o "$output_file" "$download_url" 2>/dev/null; then
+    # 使用 curl 下载，设置超时（精简超时避免单个源卡太久）
+    if curl -L --connect-timeout 5 --max-time 15 -o "$output_file" "$download_url" 2>/dev/null; then
         # 验证下载的文件是否为有效的zip文件
         if unzip -t "$output_file" &>/dev/null; then
             print_verbose "下载成功: $(basename "$download_url")"
