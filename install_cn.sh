@@ -32,9 +32,13 @@ readonly TEMP_DIR="/tmp/tcping_install"
 
 # 国内镜像源配置（按优先级排序）
 readonly MIRROR_SOURCES=(
-    "https://gh-proxy.com/https://github.com"
+    "https://efp.lxmz.fun/https://github.com"      # 腾讯eo国内版，真的国内ip
+    "https://g1.q66.de5.net/https://github.com"    # cfworker,美国
+    "https://efp.q66.de5.net/https://github.com"   # 腾讯eo国际版，正常是香港ip，国内可能连不上
+    "https://gh-proxy.org/https://github.com"
+    "https://cdn.gh-proxy.org/https://github.com"
+    "https://v4.gh-proxy.org/https://github.com"
     "https://ghfast.top/https://github.com"
-    "https://github.com"
 )
 
 # 全局变量
