@@ -226,7 +226,7 @@ get_latest_version() {
     print_verbose "正在获取最新版本信息..."
     
     local api_response
-    api_response=$(curl -s "$GITHUB_API/releases/latest" 2>/dev/null || echo "")
+    api_response=$(curl -sm 5 "$GITHUB_API/releases/latest" 2>/dev/null || echo "")
     
     if [[ -n "$api_response" ]]; then
         LATEST_VERSION=$(echo "$api_response" | grep -oE '"tag_name":\s*"[^"]*"' | cut -d'"' -f4)
