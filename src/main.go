@@ -277,31 +277,57 @@ func (r *Runner) resolve(ctx context.Context) error {
 	dnsCtx, cancel := context.WithTimeout(ctx, r.opts.DNSTimeout)
 	defer cancel()
 
-	res := net.Resolver{}
-	dnsServerAddr := ""
+	// 显式指定 DNS 服务器时，只使用该服务器解析。
 	if strings.TrimSpace(r.opts.DNSServer) != "" {
-		var err error
-		dnsServerAddr, err = normalizeDNSServer(r.opts.DNSServer)
+		dnsServerAddr, err := normalizeDNSServer(r.opts.DNSServer)
 		if err != nil {
 			return fmt.Errorf("DNS 服务器地址无效: %w", err)
 		}
-
-		dialer := &net.Dialer{Timeout: r.opts.DNSTimeout}
-		res = net.Resolver{
-			PreferGo: true,
-			Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
-				return dialer.DialContext(ctx, network, dnsServerAddr)
-			},
-		}
-	}
-
-	ipAddrs, err := res.LookupIPAddr(dnsCtx, r.host)
-	if err != nil {
-		if dnsServerAddr != "" {
+		ipAddrs, err := r.lookupVia(dnsCtx, r.host, dnsServerAddr)
+		if err != nil {
 			return fmt.Errorf("通过 DNS 服务器 %s 解析 %s 失败: %w", dnsServerAddr, r.host, err)
 		}
-		return fmt.Errorf("解析 %s 失败: %w", r.host, err)
+		return r.applyAddrs(ipAddrs)
 	}
+
+	// 未指定 DNS 服务器：先使用系统默认解析器（尊重 TUN/代理的本地回环 DNS 配置），
+	// 失败后再依次回退公共 DNS，兼容 termux 等系统默认解析器不可用（如 [::1]:53 无监听）的环境。
+	var lastErr error
+	if ipAddrs, err := net.DefaultResolver.LookupIPAddr(dnsCtx, r.host); err == nil {
+		return r.applyAddrs(ipAddrs)
+	} else {
+		lastErr = err
+		fmt.Printf("默认 DNS 解析 %s 失败: %v，尝试回退公共 DNS\n", r.host, err)
+	}
+
+	for _, candidate := range []string{"8.8.8.8:53", "1.1.1.1:53", "223.5.5.5:53"} {
+		fmt.Printf("尝试回退使用 %s 解析 %s...\n", candidate, r.host)
+		if ipAddrs, err := r.lookupVia(dnsCtx, r.host, candidate); err == nil {
+			fmt.Printf("已通过 %s 成功解析 %s\n", candidate, r.host)
+			return r.applyAddrs(ipAddrs)
+		} else {
+			lastErr = err
+			fmt.Printf("通过 %s 解析 %s 失败: %v\n", candidate, r.host, err)
+		}
+	}
+
+	return fmt.Errorf("解析 %s 失败: %w", r.host, lastErr)
+}
+
+// lookupVia 通过指定的 DNS 服务器地址（ip:port）解析主机名。
+func (r *Runner) lookupVia(ctx context.Context, host, dnsServerAddr string) ([]net.IPAddr, error) {
+	dialer := &net.Dialer{Timeout: r.opts.DNSTimeout}
+	res := net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
+			return dialer.DialContext(ctx, network, dnsServerAddr)
+		},
+	}
+	return res.LookupIPAddr(ctx, host)
+}
+
+// applyAddrs 将解析到的地址列表按 -4/-6 偏好挑选一个 IP 并写入 Runner 状态。
+func (r *Runner) applyAddrs(ipAddrs []net.IPAddr) error {
 	if len(ipAddrs) == 0 {
 		return fmt.Errorf("未找到 %s 的 IP 地址", r.host)
 	}
